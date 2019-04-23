@@ -16,7 +16,7 @@ def send_message(userid):
         "chat.postMessage",
         as_user=True,
         channel=userid,
-        text="Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n --cancelar para cancelar seu último report.",
+        text="Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n --cancelar para cancelar seu último report.\n --sam para receber uma mensagem de carinho.",
     )
 
 
@@ -46,6 +46,13 @@ def commands(userid, status):
             )
         return "O report foi cancelado por você."
         print("Comando --cancelar detectado")
+    elif ult_msg=='--sam':
+         sc.api_call(
+            "chat.postMessage",
+            as_user=True,
+            channel=userid,
+            text="Auau, eu te amo! Viva o Planeta CESAR! *balança rabo*",
+            )
     else:
         return status
 
@@ -57,4 +64,5 @@ if __name__ == '__main__':
     status="A equipe já foi mobilizada. Você será notificado quando seu problema for resolvido"
     while 'true'=='true':
         status=commands(u['id'], status)
+
 
