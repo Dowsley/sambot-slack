@@ -27,6 +27,7 @@ def commands(userid, status):
         return_im=True,
     )
     ult_msg=conv_info['channel']['latest']['text']
+    ult_msg=ult_msg.strip().lower()
 
     if ult_msg=='--status':
         sc.api_call(
@@ -36,6 +37,7 @@ def commands(userid, status):
             text=status,
             )
         print("Comando --status detectado.")
+        return status
 
     elif ult_msg=='--cancelar':
         sc.api_call(
@@ -44,15 +46,20 @@ def commands(userid, status):
             channel=userid,
             text="Report cancelado com sucesso",
             )
-        return "O report foi cancelado por você."
         print("Comando --cancelar detectado")
+        return "O report foi cancelado por você."
+
+
     elif ult_msg=='--sam':
-         sc.api_call(
+        sc.api_call(
             "chat.postMessage",
             as_user=True,
             channel=userid,
             text="Auau, eu te amo! Viva o Planeta CESAR! *balança rabo*",
             )
+        return status
+
+  
     else:
         return status
 
@@ -64,5 +71,6 @@ if __name__ == '__main__':
     status="A equipe já foi mobilizada. Você será notificado quando seu problema for resolvido"
     while 'true'=='true':
         status=commands(u['id'], status)
+
 
 
