@@ -1,6 +1,3 @@
 ---sambot---
 Oauth Acess Token: xoxp-601279383251-614580365303-616213771063-2700daea4b32cc90e019010417b9373b
 Bot User OAuth Access Token: xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI
-
----OOOOF---
-Bot User OAuth Access Token: xoxb-601279383251-615977216295-8lqal11VaQf5qYBHeMxQpo5r
