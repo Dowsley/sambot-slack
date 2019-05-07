@@ -14,12 +14,19 @@ def fetch_id(email):
 	return user_info['user']
 
 
-def send_message(userid):
+def send_message(userid,userdata):
+    if userdata['profile']['display_name']=='':
+        name=userdata['profile']['real_name']
+    else:
+        name=userdata['profile']['display_name']
+
+    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n --cancelar para cancelar seu último report.\n --sam para receber uma mensagem de carinho."
+
     sc.api_call(
         "chat.postMessage",
         as_user=True,
         channel=userid,
-        text="Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n --cancelar para cancelar seu último report.\n --sam para receber uma mensagem de carinho.",
+        text=texto,
     )
 
 
@@ -29,6 +36,7 @@ def commands(userid, status, problema_input):
         users=userid,
         return_im=True,
     )
+    
     ult_msg=conv_info['channel']['latest']['text']
     ult_msg=ult_msg.strip().lower()
 
@@ -71,9 +79,8 @@ if __name__ == '__main__':
     email_input = email_request
     problema_input = str(problema_request + ":")
     u=fetch_id(email_input)
-    send_message(u['id'])
+    send_message(u['id'],u)
     print("Successo: Primeira mensagem enviada!")
     status=" A equipe já foi mobilizada. Você será notificado quando seu problema for resolvido"
     while 'true'=='true':
         status=commands(u['id'], status, problema_input)
-
