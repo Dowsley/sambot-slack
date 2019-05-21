@@ -1,7 +1,8 @@
 import os
+import time
+from slackclient import SlackClient
 from login_request import email_request
 from login_request import problema_request
-from slackclient import SlackClient
 sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI')
 
 print("Email detectado: ",email_request)
@@ -20,7 +21,7 @@ def send_message(userid,userdata):
     else:
         name=userdata['profile']['display_name']
 
-    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n --cancelar para cancelar seu último report.\n --sam para receber uma mensagem de carinho."
+    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n--status para ver o estado de resolução do seu problema.\n--cancelar para anular o seu report."
 
     sc.api_call(
         "chat.postMessage",
@@ -61,17 +62,6 @@ def commands(userid, status, problema_input):
         print("Comando --cancelar detectado")
         return " O report foi cancelado por você."
 
-
-    elif ult_msg=='--sam':
-        sc.api_call(
-            "chat.postMessage",
-            as_user=True,
-            channel=userid,
-            text="Auau, eu te amo! Viva o Planeta CESAR! *balança rabo*",
-            )
-        return status
-
-  
     else:
         return status
 
@@ -81,6 +71,7 @@ if __name__ == '__main__':
     u=fetch_id(email_input)
     send_message(u['id'],u)
     print("Successo: Primeira mensagem enviada!")
-    status=" A equipe já foi mobilizada. Você será notificado quando seu problema for resolvido"
+    status=" Não resolvido. A equipe já foi mobilizada e você será notificado quando o problema for solucionado."
     while 'true'=='true':
         status=commands(u['id'], status, problema_input)
+        time.sleep(1)
