@@ -1,13 +1,13 @@
 import os
-import time
-from slackclient import SlackClient
-from login_request import email_request
-from login_request import problema_request
-sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI')
+import time  # Necessária para fazer delays no loop
+from slackclient import SlackClient  # Lib principal para o bot funcionar
+from login_request import email_request  # Inicializa o webhook e traz o email do usuário
+from login_request import problema_request # Inicializa o webhook e traz o problema do usuário
+sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI') # Token de controle do BOT
 
 print("Email detectado: ",email_request)
 
-def fetch_id(email):
+def fetch_id(email): # Busca as info. de um usuário no workspace de acordo com o e-mail de entrada
 	user_info=sc.api_call(
 			"users.lookupByEmail",
 			email=email,
@@ -15,7 +15,7 @@ def fetch_id(email):
 	return user_info['user']
 
 
-def send_message(userid,userdata):
+def send_message(userid,userdata): # Manda a primeira mensagem
     if userdata['profile']['display_name']=='':
         name=userdata['profile']['real_name']
     else:
@@ -31,7 +31,7 @@ def send_message(userid,userdata):
     )
 
 
-def commands(userid, status, problema_input):
+def commands(userid, status, problema_input): # Reconhece comandos e os responde
     conv_info=sc.api_call(
         "conversations.open",
         users=userid,
@@ -65,7 +65,7 @@ def commands(userid, status, problema_input):
     else:
         return status
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # Estrutura de execução
     email_input = email_request
     problema_input = str(problema_request + ":")
     u=fetch_id(email_input)
