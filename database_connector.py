@@ -1,6 +1,7 @@
-import MySQLdb
-import time
+import MySQLdb # Lib para banco de dados MySQL
+import time # Funções de delay
 
+# Declara acesso ao banco de dados
 con = MySQLdb.connect(
 	host="localhost",
 	user="root",
@@ -10,9 +11,11 @@ con = MySQLdb.connect(
 	)
 print(con)
 
-c = con.cursor(MySQLdb.cursors.DictCursor) #Parametros do cursor estão definidos para retornar um dict
+# Parametros do cursor estão definidos para retornar um dict
+c = con.cursor(MySQLdb.cursors.DictCursor) 
 
-def select(fields, tables, where=None): #Seletor
+# Função que devolve dados determinados de uma tabela
+def select(fields, tables, where=None):
 	global c
 	query = "SELECT " + fields + " FROM " + tables
 
@@ -22,10 +25,11 @@ def select(fields, tables, where=None): #Seletor
 	c.execute(query)
 	return c.fetchall()
 
-
+# Determina quantidade inicial de reports, irá servir de comparador para saber se existe report um novo
 aux = len(select("id_usuarios_report","usuarios_report"))
-print("Aux =",aux)
 
+# Loop que realiza a detecção de um report novo e, caso aconteça, quebra o loop e entra no BOT.
+print("Detecção iniciada...")
 while True:
 	cont = 0
 	db_info=select("id_usuarios_report, email_usuario, problema_reportado, status","usuarios_report")
@@ -33,17 +37,12 @@ while True:
 
 	for i in db_info:
 		cont+=1
-		print("Cont: {}".format(cont))
 
 	if cont > aux:
-		print("Detectada nova entrada!")
+		print("Nova entrada detectada... Iniciando Bot")
 		db_userinfo = db_info[cont-1]
 		aux = cont
 		con.commit()
 		break
 
 	con.commit()
-
-
-
-
