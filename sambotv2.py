@@ -6,11 +6,12 @@
 
 
 
+
 # --------------------------------------- IMPORT E CONEXÃO ---------------------------------------
 import MySQLdb # Lib para conectar com o banco de dados MySQL
 import time  # Necessária para fazer delays no loop
 from slackclient import SlackClient  # Lib principal para o bot funcionar
-from database_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
+from db_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
 
 sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI') # Conexão com o token de controle do BOT
 
@@ -28,6 +29,7 @@ c = con.cursor(MySQLdb.cursors.DictCursor) # Parametros do cursor estão definid
 
 
 
+
 # --------------------------------------- FUNÇÕES ---------------------------------------
 def select(fields, tables, where): # Seleciona e devolve determinadas informações da DB.
     global c
@@ -41,6 +43,14 @@ def update(where): # Função que realiza update (mudança) de informações na 
     global c, con
     query = "UPDATE usuarios_report"
     query += " SET status = 'Cancelado'"
+    query += " WHERE id_usuarios_report = {}".format(where)
+    c.execute(query)
+    con.commit()
+
+
+def delete(where): # Deleta um report de usuário. Servirá pra cancelar seu report por vontade própria.
+    global c, con
+    query = "DELETE FROM usuarios_report"
     query += " WHERE id_usuarios_report = {}".format(where)
     c.execute(query)
     con.commit()
@@ -69,7 +79,7 @@ def send_firstmessage(slack_userinfo): # Manda a primeira mensagem do BOT para o
     else:
         name=slack_userinfo['profile']['display_name']
 
-    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do seu problema.\n\nCANCELAR para anular o seu report."
+    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do seu problema.\nCANCELAR para anular o seu report."
     sc.api_call(
         "chat.postMessage",
         as_user=True,
@@ -90,7 +100,7 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
 
     if ult_msg == 'STATUS':
         if "não resolvido" in status.strip().lower() or "nao resolvido" in status.strip().lower():
-            text_status = problema + "Não resolvido. A equipe já foi mobilizada e você será avisado aqui quando o problema for solucionado."
+            text_status = problema + "Não resolvido. A equipe já foi mobilizada e você será notificado aqui quando o problema for solucionado."
         else:
             text_status= problema + status
 
@@ -105,16 +115,17 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
         print("Comando CANCELAR detectado") # Debugger
 
     elif ult_msg=='SIM' and cancelar==True:
-        text_status = "Report cancelado com sucesso"
+        text_status = "Report cancelado com sucesso. Você não receberá mais atualizações sobre o problema."
         send_message(userid, text_status)
         update(primarykey)
         print("CONFIRMAÇÃO de CANCELALAMENTO detectado") # Debugger
 
     elif (ult_msg=='NÃO' or ult_msg=='NAO') and cancelar==True:
         cancelar = False
-        text_status = "Tudo bem, continuaremos o processo de resolução."
+        text_status = "Tudo bem, continuaremos o processo de resolução do problema."
         send_message(userid, text_status)
         print("ANULAÇÃO de CANCELAMENTO detectado") # Debugger
+
 
 
 
@@ -124,10 +135,11 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
 email_input = db_userinfo['email_usuario'] # Email do usuário do Report
 problema_input = db_userinfo['problema_reportado'] # Problema reportado
 status_input = db_userinfo['status'] # Estado de resolução do problema
-primarykey_input = db_userinfo['id_usuarios_report'] #primarykey identificadora do report na tabela
+primarykey_input = db_userinfo['id_usuarios_report'] # Primarykey identificadora do report na tabela
 
 print("Email detectado:", email_input) # Debugger
 print("Problema detectado:", problema_input) # Debugger
+
 
 
 

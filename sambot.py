@@ -1,8 +1,8 @@
 import os
 import time  # Necessária para fazer delays no loop
 from slackclient import SlackClient  # Lib principal para o bot funcionar
-from login_request import email_request  # Inicializa o webhook e traz o email do usuário
-from login_request import problema_request # Inicializa o webhook e traz o problema do usuário
+from site_connector import email_request  # Inicializa o webhook e traz o email do usuário
+from site_connector import problema_request # Inicializa o webhook e traz o problema do usuário
 sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI') # Token de controle do BOT
 
 print("Email detectado: ",email_request)
