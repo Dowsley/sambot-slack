@@ -1,7 +1,7 @@
 # Olá! Este SCRIPT (sambotv2) é o componente principal do programa, responsável por executar o BOT enquanto está rodando.
 # Ele foi dividido em algumas partes para facilitar seu entendimento e execução.
 # Para o BOT funcionar, o SCRIPT precisa resgatar informações de um novo report no banco de dados MySQL...
-# ... e é isso que o segundo script (database_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
+# ...e é isso que o segundo script (database_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
 # Assim que as informações do novo report são importadas, a execução é retomada e o BOT começa a funcionar.
 
 
@@ -79,7 +79,7 @@ def send_firstmessage(slack_userinfo): # Manda a primeira mensagem do BOT para o
     else:
         name=slack_userinfo['profile']['display_name']
 
-    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do seu problema.\nCANCELAR para anular o seu report."
+    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do seu problema.\nCANCELAR para anular o seu report.\n\nNão se preocupe com as letras maiúsculas ou acentos :)"
     sc.api_call(
         "chat.postMessage",
         as_user=True,
@@ -95,36 +95,47 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
         return_im=True
     )
     
-    ult_msg=conv_info['channel']['latest']['text']
-    ult_msg=ult_msg.strip().upper()
 
-    if ult_msg == 'STATUS':
-        if "não resolvido" in status.strip().lower() or "nao resolvido" in status.strip().lower():
-            text_status = problema + "Não resolvido. A equipe já foi mobilizada e você será notificado aqui quando o problema for solucionado."
+    if 'bot_id' not in conv_info['channel']['latest']:    
+        ult_msg=conv_info['channel']['latest']['text']
+        ult_msg=ult_msg.strip().upper()
+
+        if ult_msg == 'STATUS':
+            if "não resolvido" in status.strip().lower() or "nao resolvido" in status.strip().lower():
+                text_status = problema + "Não resolvido. A equipe já foi mobilizada e você será notificado aqui quando o problema for solucionado."
+            else:
+                text_status= problema + status
+
+            send_message(userid, text_status)
+            print("Comando STATUS detectado.") # Debugger
+
+        elif ult_msg=='HELP':
+            text_status = "Os comandos disponíveis são:\n\nSTATUS para ver o estado de resolução do seu problema.\nCANCELAR para anular o seu report."
+            send_message(userid, text_status)
+            print("Comando HELP detectado") # Debugger
+
+        elif ult_msg=='CANCELAR':
+            global cancelar
+            cancelar=True
+            text_status = "Você tem certeza que quer cancelar seu report? Digite SIM para confirmar ou NÃO para anular esta ação."
+            send_message(userid, text_status)
+            print("Comando CANCELAR detectado") # Debugger
+
+        elif ult_msg=='SIM' and cancelar==True:
+            text_status = "Report cancelado com sucesso, você não receberá mais atualizações sobre o problema. Obrigado por contribuir com o SAM!"
+            send_message(userid, text_status)
+            update(primarykey)
+            print("CONFIRMAÇÃO de CANCELAMENTO detectado") # Debugger
+
+        elif (ult_msg=='NÃO' or ult_msg=='NAO') and cancelar==True:
+            cancelar = False
+            text_status = "Tudo bem, continuaremos o processo de resolução do problema."
+            send_message(userid, text_status)
+            print("ANULAÇÃO de CANCELAMENTO detectado") # Debugger
+
         else:
-            text_status= problema + status
-
-        send_message(userid, text_status)
-        print("Comando STATUS detectado.") # Debugger
-
-    elif ult_msg=='CANCELAR':
-        global cancelar
-        cancelar=True
-        text_status = "Você tem certeza que quer cancelar seu report? Digite SIM para confirmar ou NÃO para anular esta ação."
-        send_message(userid, text_status)
-        print("Comando CANCELAR detectado") # Debugger
-
-    elif ult_msg=='SIM' and cancelar==True:
-        text_status = "Report cancelado com sucesso. Você não receberá mais atualizações sobre o problema."
-        send_message(userid, text_status)
-        update(primarykey)
-        print("CONFIRMAÇÃO de CANCELALAMENTO detectado") # Debugger
-
-    elif (ult_msg=='NÃO' or ult_msg=='NAO') and cancelar==True:
-        cancelar = False
-        text_status = "Tudo bem, continuaremos o processo de resolução do problema."
-        send_message(userid, text_status)
-        print("ANULAÇÃO de CANCELAMENTO detectado") # Debugger
+            text_status = "Comando não reconhecido. Talvez você queira escrever HELP para relembrar quais são os comandos disponíveis."
+            send_message(userid, text_status)
 
 
 
@@ -159,9 +170,14 @@ if __name__ == '__main__':
         commands(slack_userinfo['id'], status_input, problema_input,primarykey_input)
         status_input=select("status", "usuarios_report", "id_usuarios_report={}".format(primarykey_input))[0]['status']        
         
-        if status_input.lower() =="resolvido" and passagem==False:
+        if 'cancelado' in status_input.lower():
+            print("Report cancelado... Encerrando Script.")
+            break
+
+
+        if (status_input.lower()=='resolvido' or status_input.lower()=='resolvido.') and passagem==False:
             passagem=True
-            text_status = "Seu problema foi resolvido! Obrigado por contribuir com o SAM. Fui!"
+            text_status = "Seu problema foi resolvido! Você não receberá mais atualizações sobre o problema. Obrigado por contribuir com o SAM!"
             send_message(slack_userinfo['id'], text_status)
             print("Problema resolvido... Encerrando o script.") # Debugger
             break
