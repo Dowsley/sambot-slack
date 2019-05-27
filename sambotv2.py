@@ -134,7 +134,7 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
             print("ANULAÇÃO de CANCELAMENTO detectado") # Debugger
 
         else:
-            text_status = "Comando não reconhecido. Talvez você queira escrever HELP para relembrar quais são os comandos disponíveis."
+            text_status = "Comando não reconhecido. Talvez você queira digitar HELP para relembrar quais são os comandos disponíveis."
             send_message(userid, text_status)
 
 

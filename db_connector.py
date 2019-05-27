@@ -41,7 +41,7 @@ while True:
 	time.sleep(1)
 
 	for i in db_info:
-		cont+=1
+		cont += 1
 
 	if cont > aux:
 		print("Nova entrada detectada... Iniciando Bot")
