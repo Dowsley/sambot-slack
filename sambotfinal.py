@@ -4,28 +4,30 @@
 # ...e é isso que o segundo script (database_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
 # Assim que as informações do novo report são importadas, a execução é retomada e o BOT começa a funcionar.
 
-
+# É importante deixar claro que esse conjunto de scripts foi feito de tal forma que possa ser reescrito, reestruturado, por vocês.
+# O objetivo aqui é criar adaptabilidade às possíveis integrações no seu sistema, inclusive no GLPI.
+# Qualquer dúvida sobre o código, pode me contatar em: jfcd@cesar.school
 
 
 # --------------------------------------- IMPORT E CONEXÃO ---------------------------------------
 import MySQLdb # Lib para conectar com o banco de dados MySQL
-import time  # Necessária para fazer delays no loop
+import time # Necessária para fazer delays no loop
 from slackclient import SlackClient  # Lib principal para o bot funcionar
-from db_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
+from dbsite_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
 
-sc = SlackClient('xoxb-601279383251-616213772279-sffjqQxH5C6eh2zL26dhsUOI') # Conexão com o token de controle do BOT
+sc = SlackClient('xoxb-310770145379-665484575621-za7alq4MDso5erL0TDNPBuKM') # Conexão com o token de controle do BOT
 
-con = MySQLdb.connect( # Conexão com o banco de dados
-    host="localhost",
-    user="root",
-    password="s4mb0t_cesarschool",
+con = MySQLdb.connect( # É aqui que se coloca as credenciais de conexão com o banco de dados de vocês, portanto que seja MySQL.
+    host="sql223.main-hosting.eu",
+    user="u980762916_form",
+    password="Recife02",
     port = 3306,
-    db="database_report"
+    db="u980762916_form" 
     )
-
 print(con)
 
-c = con.cursor(MySQLdb.cursors.DictCursor) # Parametros do cursor estão definidos para retornar um dict
+
+c = con.cursor(MySQLdb.cursors.DictCursor) # Parametros do cursor estão definidos para retornar em forma de dicionário.
 
 
 
@@ -41,16 +43,16 @@ def select(fields, tables, where): # Seleciona e devolve determinadas informaç�
 
 def update(where): # Função que realiza update (mudança) de informações na DB.
     global c, con
-    query = "UPDATE usuarios_report"
+    query = "UPDATE mensagens_contatos"
     query += " SET status = 'Cancelado'"
     query += " WHERE id_usuarios_report = {}".format(where)
     c.execute(query)
     con.commit()
 
 
-def delete(where): # Deleta um report de usuário. Servirá pra cancelar seu report por vontade própria.
+def delete(where): # Deleta um report de usuário. Não foi utilizado no código, mas talvez sirva para alterações futuras.
     global c, con
-    query = "DELETE FROM usuarios_report"
+    query = "DELETE FROM mensagens_contatos"
     query += " WHERE id_usuarios_report = {}".format(where)
     c.execute(query)
     con.commit()
@@ -64,7 +66,7 @@ def fetch_info(email): # Busca as info. de um usuário no workspace de acordo co
     return user_info['user']
 
 
-def send_message(userid,text): # Manda uma mensagem (como BOT) para o usuário
+def send_message(userid, text): # Manda uma mensagem (como BOT) para o usuário
     sc.api_call(
             "chat.postMessage",
             as_user=True,
@@ -104,7 +106,7 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
             if "não resolvido" in status.strip().lower() or "nao resolvido" in status.strip().lower():
                 text_status = problema + "Não resolvido. A equipe já foi mobilizada e você será notificado aqui quando o problema for solucionado."
             else:
-                text_status= problema + status
+                text_status = problema + status
 
             send_message(userid, text_status)
             print("Comando STATUS detectado.") # Debugger
@@ -143,19 +145,27 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
 # --------------------------------------- RESGATE E DEFINIÇÃO DE INFORMAÇÕES ---------------------------------------
 # As informações do request (importadas no começo do script) são divididas em informações menores e definidas.
 
+if db_userinfo['problema_reportado'] != None and db_userinfo['problema_reportado'] != '':
+    problema_input = db_userinfo['problema_reportado']  # Problema reportado
+    print("Problema botão!")
+
+else:
+    problema_input = db_userinfo['mensagem'] # Caso o problema tenha sido um preenchimento na área "Outros"
+    print("Problema de Outros!")
+
 email_input = db_userinfo['email_usuario'] # Email do usuário do Report
-problema_input = db_userinfo['problema_reportado'] # Problema reportado
 status_input = db_userinfo['status'] # Estado de resolução do problema
 primarykey_input = db_userinfo['id_usuarios_report'] # Primarykey identificadora do report na tabela
 
 print("Email detectado:", email_input) # Debugger
 print("Problema detectado:", problema_input) # Debugger
+print("Chave do usuário: {}".format(primarykey_input)) #Debugger
 
 
 
 
 # --------------------------------------- EXECUÇÃO ---------------------------------------
-# Realiza todas as operações de bot num loop eterno (até o problema ser resolvido)
+# Inicia a execução e realiza todas as operações do bot através de um loop, que não para até o problema ser resolvido/cancelado.
 
 if __name__ == '__main__':  
     problema_input += ": "
@@ -164,14 +174,14 @@ if __name__ == '__main__':
 
     slack_userinfo=fetch_info(email_input)
     send_firstmessage(slack_userinfo)
-    print("Successo: Primeira mensagem enviada!")
+    print("Successo: Primeira mensagem enviada!") # Debugger
 
     while True:
         commands(slack_userinfo['id'], status_input, problema_input,primarykey_input)
-        status_input=select("status", "usuarios_report", "id_usuarios_report={}".format(primarykey_input))[0]['status']        
+        status_input=select("status", "mensagens_contatos", "id_usuarios_report={}".format(primarykey_input))[0]['status']        
         
         if 'cancelado' in status_input.lower():
-            print("Report cancelado... Encerrando Script.")
+            print("Report cancelado... Encerrando Script.") # Debugger
             break
 
 
@@ -182,5 +192,5 @@ if __name__ == '__main__':
             print("Problema resolvido... Encerrando o script.") # Debugger
             break
 
-        time.sleep(1)
+        time.sleep(1) # Sleep de 1 segundo, essencial para manter-se na faixa do request rate-limit do Slack.
         con.commit()
