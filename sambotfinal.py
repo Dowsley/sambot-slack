@@ -1,18 +1,18 @@
 # Olá! Este SCRIPT (sambotv2) é o componente principal do programa, responsável por executar o BOT enquanto está rodando.
 # Ele foi dividido em algumas partes para facilitar seu entendimento e execução.
 # Para o BOT funcionar, o SCRIPT precisa resgatar informações de um novo report no banco de dados MySQL...
-# ...e é isso que o segundo script (database_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
+# ...e é isso que o segundo script (dbsite_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
 # Assim que as informações do novo report são importadas, a execução é retomada e o BOT começa a funcionar.
 
 # É importante deixar claro que esse conjunto de scripts foi feito de tal forma que possa ser reescrito, reestruturado, por vocês.
 # O objetivo aqui é criar adaptabilidade às possíveis integrações no seu sistema, inclusive no GLPI.
-# Qualquer dúvida sobre o código, pode me contatar em: jfcd@cesar.school
+# Qualquer dúvida sobre o código, contatar em: jfcd@cesar.school
 
 
 # --------------------------------------- IMPORT E CONEXÃO ---------------------------------------
 import MySQLdb # Lib para conectar com o banco de dados MySQL
 import time # Necessária para fazer delays no loop
-from slackclient import SlackClient  # Lib principal para o bot funcionar
+from slackclient import SlackClient  # Lib principal para o bot funcionar, conecta com a API do Slack.
 from dbsite_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
 
 sc = SlackClient('xoxb-310770145379-665484575621-za7alq4MDso5erL0TDNPBuKM') # Conexão com o token de controle do BOT
@@ -33,7 +33,8 @@ c = con.cursor(MySQLdb.cursors.DictCursor) # Parametros do cursor estão definid
 
 
 # --------------------------------------- FUNÇÕES ---------------------------------------
-def select(fields, tables, where): # Seleciona e devolve determinadas informações da DB.
+
+def select(fields, tables, where): # Seleciona e devolve determinadas informações do Banco de Dados.
     global c
     query = "SELECT " + fields + " FROM " + tables
     query += " WHERE " + where
@@ -41,7 +42,7 @@ def select(fields, tables, where): # Seleciona e devolve determinadas informaç�
     return c.fetchall()
 
 
-def update(where): # Função que realiza update (mudança) de informações na DB.
+def update(where): # Função que realiza update (mudança) de informações no banco de dados.
     global c, con
     query = "UPDATE mensagens_contatos"
     query += " SET status = 'Cancelado'"
@@ -75,7 +76,7 @@ def send_message(userid, text): # Manda uma mensagem (como BOT) para o usuário
             )
 
 
-def send_firstmessage(slack_userinfo): # Manda a primeira mensagem do BOT para o usuário
+def send_firstmessage(slack_userinfo): # Manda a primeira mensagem do BOT para o usuário.
     if slack_userinfo['profile']['display_name']=='':
         name=slack_userinfo['profile']['real_name']
     else:
@@ -143,7 +144,7 @@ def commands(userid, status, problema, primarykey): # Reconhece comandos e os re
 
 
 # --------------------------------------- RESGATE E DEFINIÇÃO DE INFORMAÇÕES ---------------------------------------
-# As informações do request (importadas no começo do script) são divididas em informações menores e definidas.
+# As informações do request (importadas no começo do script) são divididas individualmente em variáveis separadas.
 
 if db_userinfo['problema_reportado'] != None and db_userinfo['problema_reportado'] != '':
     problema_input = db_userinfo['problema_reportado']  # Problema reportado
@@ -192,5 +193,5 @@ if __name__ == '__main__':
             print("Problema resolvido... Encerrando o script.") # Debugger
             break
 
-        time.sleep(1) # Sleep de 1 segundo, essencial para manter-se na faixa do request rate-limit do Slack.
+        time.sleep(1) # Sleep de 1 segundo, obrigatório para manter-se na faixa do rate-limit do Slack. Menos que isso pode causar erros nos requests.
         con.commit()
