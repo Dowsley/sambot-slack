@@ -3,10 +3,11 @@
 # Para o BOT funcionar, o SCRIPT precisa resgatar informações de um novo report no banco de dados MySQL...
 # ...e é isso que o segundo script (dbsite_connector) faz: Mantém uma constante detecção e só para quando um novo report entra.
 # Assim que as informações do novo report são importadas, a execução é retomada e o BOT começa a funcionar.
-
 # É importante deixar claro que esse conjunto de scripts foi feito de tal forma que possa ser reescrito, reestruturado, por vocês.
 # O objetivo aqui é criar adaptabilidade às possíveis integrações no seu sistema, inclusive no GLPI.
 # Qualquer dúvida sobre o código, contatar em: jfcd@cesar.school
+
+
 
 
 # --------------------------------------- IMPORT E CONEXÃO ---------------------------------------
@@ -82,7 +83,7 @@ def send_firstmessage(slack_userinfo): # Manda a primeira mensagem do BOT para o
     else:
         name=slack_userinfo['profile']['display_name']
 
-    texto = "Olá " + name + "! Seu report foi enviado com sucesso. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do seu problema.\nCANCELAR para anular o seu report.\n\nNão se preocupe com as letras maiúsculas ou acentos :)"
+    texto = "Olá " + name + "! Seu report foi enviado com sucesso, e você automaticamente receberá uma notificação quando o problema for resolvido. Para receber mais feedback, utilize os seguintes comandos:\n\nSTATUS para ver o estado de resolução do problema.\nCANCELAR para anular o seu report.\n\nNão se preocupe com as letras maiúsculas ou acentos na hora de digitar os comandos :)"
     sc.api_call(
         "chat.postMessage",
         as_user=True,
