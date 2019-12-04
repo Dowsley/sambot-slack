@@ -5,9 +5,6 @@
 # Assim que as informações do novo report são importadas, a execução é retomada e o BOT começa a funcionar.
 # É importante deixar claro que esse conjunto de scripts foi feito de tal forma que possa ser reescrito, reestruturado, por vocês.
 # O objetivo aqui é criar adaptabilidade às possíveis integrações no seu sistema, inclusive no GLPI.
-# Qualquer dúvida sobre o código, contatar em: jfcd@cesar.school
-
-
 
 
 # --------------------------------------- IMPORT E CONEXÃO ---------------------------------------
@@ -16,21 +13,19 @@ import time # Necessária para fazer delays no loop
 from slackclient import SlackClient  # Lib principal para o bot funcionar, conecta com a API do Slack.
 from dbsite_connector import db_userinfo # Variável que carrega os dados de usuario do novo request, executa segundo Script.
 
-sc = SlackClient('xoxb-310770145379-665484575621-za7alq4MDso5erL0TDNPBuKM') # Conexão com o token de controle do BOT
+sc = SlackClient('') # Conexão com o token de controle do BOT
 
 con = MySQLdb.connect( # É aqui que se coloca as credenciais de conexão com o banco de dados de vocês, portanto que seja MySQL.
-    host="sql223.main-hosting.eu",
-    user="u980762916_form",
-    password="Recife02",
-    port = 3306,
-    db="u980762916_form" 
+    host="",
+    user="",
+    password="",
+    port = 0000,
+    db="" 
     )
 print(con)
 
 
 c = con.cursor(MySQLdb.cursors.DictCursor) # Parametros do cursor estão definidos para retornar em forma de dicionário.
-
-
 
 
 # --------------------------------------- FUNÇÕES ---------------------------------------

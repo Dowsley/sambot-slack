@@ -1,6 +1,0 @@
-OAuth Acess Token: xoxp-310770145379-310869505314-659122400177-ee31dcc2ccf86c2b5e0f8a20729916f1
-Bot User OAuth Access Token: xoxb-310770145379-665484575621-za7alq4MDso5erL0TDNPBuKM
-
------------------------------------------------------------------------------------------------------------
-
-Ambos são os tokens de controle do Bot.

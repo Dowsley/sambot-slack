@@ -2,11 +2,11 @@ import MySQLdb
 import time
 
 con = MySQLdb.connect( # O nome da tabela é 'mensagens_contatos'
-	host="sql223.main-hosting.eu",
-	user="u980762916_form",
-	password="Recife02",
-	port = 3306,
-	db="u980762916_form" 
+	host="",
+	user="",
+	password="",
+	port = 0000,
+	db="" 
 	)
 print(con)
 
